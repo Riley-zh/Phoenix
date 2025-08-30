@@ -1,0 +1,18 @@
+# 允许访问assets目录
+<Directory "assets">
+    Allow from all
+</Directory>
+
+# CSS和JS文件的MIME类型
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+</IfModule>
+
+# 静态资源缓存
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/* "access plus 1 month"
+</IfModule>
