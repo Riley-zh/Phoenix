@@ -2,10 +2,6 @@
 ob_start();
 ?>
 
-<?php
-ob_start();
-?>
-
 <div class="row">
     <div class="col-12">
         <div class="jumbotron fade-in">

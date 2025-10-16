@@ -11,6 +11,8 @@
 - **响应式设计**: Bootstrap 5 现代化界面
 - **RESTful API**: JSON API接口支持
 - **会话管理**: 完整的会话和消息系统
+- **安全防护**: CSRF保护、XSS防护、SQL注入防护
+- **性能优化**: 数据库索引、查询优化
 
 ## 项目结构
 
@@ -67,6 +69,8 @@ define('DB_USER', 'root');
 define('DB_PASS', '你的密码');
 ```
 
+3. 数据库脚本已包含性能优化索引，以提高查询速度。
+
 ### 3. 启动项目
 
 使用PHP内置服务器：
@@ -118,6 +122,13 @@ GET /api/users
 - `email` - 邮箱格式
 - `min:n` - 最小长度
 - `max:n` - 最大长度
+
+### 安全特性
+
+- **CSRF保护**: 所有表单都包含CSRF令牌验证
+- **XSS防护**: 使用htmlspecialchars函数转义输出
+- **SQL注入防护**: 使用PDO预处理语句
+- **安全头信息**: 设置Content-Security-Policy等安全头
 
 ## 扩展开发
 

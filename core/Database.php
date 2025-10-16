@@ -12,11 +12,13 @@ class Database {
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_STRINGIFY_FETCHES => false
                 ]
             );
         } catch (PDOException $e) {
-            die("数据库连接失败: " . $e->getMessage());
+            error_log("数据库连接失败: " . $e->getMessage());
+            die("数据库连接失败，请检查配置文件");
         }
     }
     
@@ -37,7 +39,8 @@ class Database {
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
-            throw new Exception("数据库查询错误: " . $e->getMessage());
+            error_log("数据库查询错误: " . $e->getMessage() . " SQL: " . $sql . " Params: " . json_encode($params));
+            throw new Exception("数据库查询错误，请稍后重试");
         }
     }
     

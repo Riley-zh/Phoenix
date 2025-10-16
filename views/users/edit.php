@@ -26,6 +26,7 @@ unset($_SESSION['errors'], $_SESSION['old_input']);
             </div>
             <div class="card-body p-4">
                 <form method="POST" action="/users/update/<?php echo $user['id']; ?>" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo $this->generateCSRFToken(); ?>">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-4">

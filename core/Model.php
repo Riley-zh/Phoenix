@@ -20,10 +20,10 @@ class Model {
     
     public function create($data) {
         $fields = implode(',', array_keys($data));
-        $placeholders = ':' . implode(', :', array_keys($data));
+        $placeholders = implode(', ', array_fill(0, count($data), '?'));
         
         $sql = "INSERT INTO {$this->table} ({$fields}) VALUES ({$placeholders})";
-        $this->db->query($sql, $data);
+        $this->db->query($sql, array_values($data));
         
         return $this->db->lastInsertId();
     }
@@ -31,14 +31,15 @@ class Model {
     public function update($id, $data) {
         $fields = [];
         foreach (array_keys($data) as $field) {
-            $fields[] = "{$field} = :{$field}";
+            $fields[] = "{$field} = ?";
         }
         $fields = implode(', ', $fields);
         
-        $sql = "UPDATE {$this->table} SET {$fields} WHERE {$this->primaryKey} = :id";
-        $data['id'] = $id;
+        $sql = "UPDATE {$this->table} SET {$fields} WHERE {$this->primaryKey} = ?";
+        $values = array_values($data);
+        $values[] = $id;
         
-        return $this->db->execute($sql, $data);
+        return $this->db->execute($sql, $values);
     }
     
     public function delete($id) {

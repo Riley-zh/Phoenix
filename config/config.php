@@ -3,7 +3,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'php_project');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', '000000');
 
 // 应用配置
 define('APP_NAME', 'PHP MVC 项目');

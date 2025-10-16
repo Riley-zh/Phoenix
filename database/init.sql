@@ -19,6 +19,10 @@ INSERT INTO users (name, email, age) VALUES
 ('王五', 'wangwu@example.com', 28),
 ('赵六', 'zhaoliu@example.com', 35);
 
+-- 创建索引以提高查询性能
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_created_at ON users(created_at);
+
 -- 显示创建的表结构
 DESCRIBE users;
 

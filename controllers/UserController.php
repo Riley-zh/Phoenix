@@ -24,10 +24,24 @@ class UserController extends Controller {
     }
     
     public function store() {
+        // 检查请求方法
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/users/create');
+            return;
+        }
+        
+        // 验证CSRF令牌
+        $csrfToken = $this->input('csrf_token');
+        if (!$this->validateCSRFToken($csrfToken)) {
+            $_SESSION['error'] = '无效的请求，请重试';
+            $this->redirect('/users/create');
+            return;
+        }
+        
         $userData = [
-            'name' => $this->input('name'),
-            'email' => $this->input('email'),
-            'age' => $this->input('age')
+            'name' => trim($this->input('name', '')),
+            'email' => trim($this->input('email', '')),
+            'age' => (int)$this->input('age', 0)
         ];
         
         // 验证数据
@@ -37,6 +51,15 @@ class UserController extends Controller {
             'age' => 'required'
         ]);
         
+        // 检查邮箱是否已存在
+        if (empty($errors)) {
+            $userModel = new User();
+            $existingUser = $userModel->getByEmail($userData['email']);
+            if ($existingUser && !empty($existingUser['id'])) {
+                $errors['email'] = '该邮箱地址已被使用';
+            }
+        }
+        
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
             $_SESSION['old_input'] = $userData;
@@ -44,20 +67,32 @@ class UserController extends Controller {
             return;
         }
         
-        $userModel = new User();
         $userData['created_at'] = date('Y-m-d H:i:s');
         
         try {
-            $userModel->create($userData);
-            $_SESSION['success'] = '用户创建成功！';
-            $this->redirect('/users');
+            $userModel = new User();
+            $userId = $userModel->create($userData);
+            if ($userId) {
+                $_SESSION['success'] = '用户创建成功！';
+                $this->redirect('/users');
+            } else {
+                throw new Exception('创建用户失败');
+            }
         } catch (Exception $e) {
-            $_SESSION['error'] = '创建用户失败：' . $e->getMessage();
+            error_log("创建用户失败: " . $e->getMessage());
+            $_SESSION['error'] = '创建用户失败，请稍后重试';
             $this->redirect('/users/create');
         }
     }
     
     public function edit($id) {
+        // 验证ID参数
+        if (!is_numeric($id) || $id <= 0) {
+            $_SESSION['error'] = '无效的用户ID';
+            $this->redirect('/users');
+            return;
+        }
+        
         $userModel = new User();
         $user = $userModel->find($id);
         
@@ -76,6 +111,27 @@ class UserController extends Controller {
     }
     
     public function update($id) {
+        // 检查请求方法
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/users/edit/{$id}");
+            return;
+        }
+        
+        // 验证ID参数
+        if (!is_numeric($id) || $id <= 0) {
+            $_SESSION['error'] = '无效的用户ID';
+            $this->redirect('/users');
+            return;
+        }
+        
+        // 验证CSRF令牌
+        $csrfToken = $this->input('csrf_token');
+        if (!$this->validateCSRFToken($csrfToken)) {
+            $_SESSION['error'] = '无效的请求，请重试';
+            $this->redirect("/users/edit/{$id}");
+            return;
+        }
+        
         $userModel = new User();
         $user = $userModel->find($id);
         
@@ -86,9 +142,9 @@ class UserController extends Controller {
         }
         
         $userData = [
-            'name' => $this->input('name'),
-            'email' => $this->input('email'),
-            'age' => $this->input('age')
+            'name' => trim($this->input('name', '')),
+            'email' => trim($this->input('email', '')),
+            'age' => (int)$this->input('age', 0)
         ];
         
         // 验证数据
@@ -97,6 +153,14 @@ class UserController extends Controller {
             'email' => 'required|email',
             'age' => 'required'
         ]);
+        
+        // 检查邮箱是否被其他用户使用
+        if (empty($errors)) {
+            $existingUser = $userModel->getByEmail($userData['email']);
+            if ($existingUser && $existingUser['id'] != $id) {
+                $errors['email'] = '该邮箱地址已被其他用户使用';
+            }
+        }
         
         if (!empty($errors)) {
             $_SESSION['errors'] = $errors;
@@ -108,16 +172,28 @@ class UserController extends Controller {
         $userData['updated_at'] = date('Y-m-d H:i:s');
         
         try {
-            $userModel->update($id, $userData);
-            $_SESSION['success'] = '用户更新成功！';
-            $this->redirect('/users');
+            $result = $userModel->update($id, $userData);
+            if ($result !== false) {
+                $_SESSION['success'] = '用户更新成功！';
+                $this->redirect('/users');
+            } else {
+                throw new Exception('更新用户失败');
+            }
         } catch (Exception $e) {
-            $_SESSION['error'] = '更新用户失败：' . $e->getMessage();
+            error_log("更新用户失败: " . $e->getMessage());
+            $_SESSION['error'] = '更新用户失败，请稍后重试';
             $this->redirect("/users/edit/{$id}");
         }
     }
     
     public function delete($id) {
+        // 验证ID参数
+        if (!is_numeric($id) || $id <= 0) {
+            $_SESSION['error'] = '无效的用户ID';
+            $this->redirect('/users');
+            return;
+        }
+        
         $userModel = new User();
         $user = $userModel->find($id);
         
